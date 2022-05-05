@@ -4,6 +4,7 @@ import time
 
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
 
 import spider_util
 
@@ -23,7 +24,7 @@ def begin_search(browser: WebDriver, keyword: str):
     #
     # search_btn = browser.find_element(By.XPATH, '//*[@id="douyin-header"]/div/header/div/div/div[1]/div/div[2]/div/button')
     # search_btn.click()
-    spider_util.scroll_to_bottom(10)
+    spider_util.scroll_to_bottom(browser, 30)
     video_parent = browser.find_element(By.XPATH, '//*[@id="dark"]/div[2]/div/div[3]/div[1]/ul')
     list = video_parent.find_elements_by_xpath('li')
     li_len = len(list)
@@ -39,7 +40,9 @@ def begin_search(browser: WebDriver, keyword: str):
 
         # hover_div = video.find_element(By.XPATH, 'div/div/div[3]/div/div/div[1]/div[1]/div/div[3]/div[2]')
         # webdriver.ActionChains(browser).move_to_element(hover_div).perform()
-
+        WebDriverWait(browser, 24 * 60 * 3600).until(lambda driver: driver.find_element(By.XPATH,
+                                                                                        'div/div/div[3]/div/div/div[1]/div[1]/div/div[2]/div[1]/xg-controls/xg-inner-controls/xg-right-grid/xg-icon[1]/a')
+                                                     )
         video_info_div = video.find_element(By.XPATH,
                                             'div/div/div[3]/div/div/div[1]/div[1]/div/div[2]/div[1]/xg-controls/xg-inner-controls/xg-right-grid/xg-icon[1]/a')
         print(video_info_div.get_attribute("href"))
@@ -69,7 +72,11 @@ def save_searched_video_list_data(browser: WebDriver, keyword: str):
         print(video_list)
     for video_url in video_list:
         video_id = spider_util.get_video_id_from_url(video_url)
-        save_single_work(browser ,video_id)
+        video_file_path = f"{file_save_path}/work/{video_id}"
+        if os.path.exists(video_file_path):
+            print(f"视频:{video_id}已处理")
+        else:
+            save_single_work(browser, video_id)
 
 
 def save_single_work(browser: WebDriver, video_id: str):

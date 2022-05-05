@@ -21,31 +21,21 @@ def dy_login(browser: WebDriver):
         try:
             print("登录机制1")
             login_btn_case1.click()
+            WebDriverWait(browser, 24 * 60 * 3600).until(
+                lambda driver: find_element_by_xpath_silent(browser, '//*[@id="qdblhsHs"]') is None)
         except Exception as e:
             print(e)
     elif login_btn_case2 is not None:
         try:
             print("登录机制2")
             login_btn_case2.click()
+            WebDriverWait(browser, 24 * 60 * 3600).until(
+                lambda driver: find_element_by_xpath_silent(browser, '//*[@id="Qf6c6FMM"]') is None)
         except Exception as e:
             print(e)
     else:
         print("暂不支持的登录机制")
         raise Exception("登录失败")
-
-    icon_obj_1 = find_element_by_xpath_silent(browser,
-                                              '//*[@id="douyin-header"]/header/div[2]/div[2]/div/div/div/ul[1]/li[5]')
-    icon_obj_2 = find_element_by_xpath_silent(browser,
-                                              '//*[@id="douyin-header"]/div/header/div/div/div[2]/div/div/div/ul[1]/li[5]/a')
-    if icon_obj_1 is not None:
-        print(f'find //*[@id="douyin-header"]/header/div[2]/div[2]/div/div/div/ul[1]/li[5], {icon_obj_1.text}')
-    if icon_obj_2 is not None:
-        print(f'find //*[@id="douyin-header"]/div/header/div/div/div[2]/div/div/div/ul[1]/li[5]/a, {icon_obj_2.text}')
-
-    WebDriverWait(browser, 24 * 60 * 3600).until(lambda driver: driver.find_element(By.XPATH,
-                                                                                    '//*[@id="douyin-header"]/header/div[2]/div[2]/div/div/div/ul[1]/li[5]')
-                                                                and (driver.find_element(By.XPATH,
-                                                                                         '//*[@id="douyin-header"]/header/div[2]/div[2]/div/div/div/ul[1]/li[5]').text == ""))
 
     print("登录成功")
 
