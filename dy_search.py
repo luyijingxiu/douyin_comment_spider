@@ -36,11 +36,9 @@ def begin_search(browser: WebDriver, keyword: str):
         video = browser.find_element(By.XPATH, f'//*[@id="dark"]/div[2]/div/div[3]/div[1]/ul/li[{i}]')
         browser.execute_script("arguments[0].scrollIntoView();", video)
 
-        time.sleep(2)
-
         # hover_div = video.find_element(By.XPATH, 'div/div/div[3]/div/div/div[1]/div[1]/div/div[3]/div[2]')
         # webdriver.ActionChains(browser).move_to_element(hover_div).perform()
-        WebDriverWait(browser, 24 * 60 * 3600).until(lambda driver: driver.find_element(By.XPATH,
+        WebDriverWait(browser, 30).until(lambda x: video.find_element(By.XPATH,
                                                                                         'div/div/div[3]/div/div/div[1]/div[1]/div/div[2]/div[1]/xg-controls/xg-inner-controls/xg-right-grid/xg-icon[1]/a')
                                                      )
         video_info_div = video.find_element(By.XPATH,
