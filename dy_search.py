@@ -13,26 +13,17 @@ tik_tok_prefix_url = 'https://www.douyin.com'
 file_save_path = file_path + r'/spider/'
 
 
-def begin_search(browser: WebDriver, keyword: str):
+def begin_search(browser: WebDriver, keyword: str, expect_search_result_num: int):
     req_url = f"{tik_tok_prefix_url}/search/{keyword}"
 
     browser.get(req_url)
     time.sleep(2)
     spider_util.dy_login(browser)
-    # search_input = browser.find_element(By.XPATH,'//*[@id="douyin-header"]/div/header/div/div/div[1]/div/div[2]/div/form/input[1]')
-    # search_input.send_keys(keyword)
-    #
-    # search_btn = browser.find_element(By.XPATH, '//*[@id="douyin-header"]/div/header/div/div/div[1]/div/div[2]/div/button')
-    # search_btn.click()
-    spider_util.scroll_to_bottom(browser, 30)
-    video_parent = browser.find_element(By.XPATH, '//*[@id="dark"]/div[2]/div/div[3]/div[1]/ul')
-    list = video_parent.find_elements_by_xpath('li')
-    li_len = len(list)
-    print(f"视频总数：{li_len}")
+
     i = 1
 
     video_ur_list = []
-    while i <= li_len:
+    while i <= expect_search_result_num:
         video = browser.find_element(By.XPATH, f'//*[@id="dark"]/div[2]/div/div[3]/div[1]/ul/li[{i}]')
         browser.execute_script("arguments[0].scrollIntoView();", video)
 
