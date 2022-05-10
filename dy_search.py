@@ -34,7 +34,7 @@ def begin_search(browser: WebDriver, keyword: str, expect_search_result_num: int
             lambda driver: spider_util.find_element_by_xpath_silent(browser,
                                                                     video_info_div_xpath_1) is not None or spider_util.find_element_by_xpath_silent(
                 browser, video_info_div_xpath_2) is not None)
-        # 获取详情链接
+        # 获取详情链接llll
         video_info_div = spider_util.find_element_by_xpath_silent(browser, video_info_div_xpath_1)
         # 上一种方式有可能出错，则采取第二种
         if video_info_div is None:
