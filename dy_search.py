@@ -27,16 +27,18 @@ def begin_search(browser: WebDriver, keyword: str, expect_search_result_num: int
         video = browser.find_element(By.XPATH, f'//*[@id="dark"]/div[2]/div/div[3]/div[1]/ul/li[{i}]')
         browser.execute_script("arguments[0].scrollIntoView();", video)
 
-        WebDriverWait(browser, 30).until(lambda driver: driver.find_element(By.XPATH,
-                                                                            f'//*[@id="dark"]/div[2]/div/div[3]/div[1]/ul/li[{i}]/div/div/div[3]/div/div/div[1]/div[1]/div/div[2]/div[1]/xg-controls/xg-inner-controls/xg-right-grid/xg-icon[1]/a')
-                                         )
+        video_info_div_xpath_1 = f'//*[@id="dark"]/div[2]/div/div[3]/div[1]/ul/li[{i}]/div/div/div[3]/div/div/div[1]/div[1]/div/div[2]/div[1]/xg-controls/xg-inner-controls/xg-right-grid/xg-icon[1]/a'
+        video_info_div_xpath_2 = f'//*[@id="dark"]/div[2]/div/div[3]/div[1]/ul/li[{i}]/div/div/div[2]/div/div/div[1]/div[1]/div/div[2]/div[1]/xg-controls/xg-inner-controls/xg-right-grid/xg-icon[1]/a'
+
+        WebDriverWait(browser, 30).until(
+            lambda driver: spider_util.find_element_by_xpath_silent(browser,
+                                                                    video_info_div_xpath_1) is not None or spider_util.find_element_by_xpath_silent(
+                browser, video_info_div_xpath_2) is not None)
         # 获取详情链接
-        video_info_div = spider_util.find_element_by_xpath_silent(browser,
-                                                                  f'//*[@id="dark"]/div[2]/div/div[3]/div[1]/ul/li[{i}]/div/div/div[3]/div/div/div[1]/div[1]/div/div[2]/div[1]/xg-controls/xg-inner-controls/xg-right-grid/xg-icon[1]/a')
+        video_info_div = spider_util.find_element_by_xpath_silent(browser, video_info_div_xpath_1)
         # 上一种方式有可能出错，则采取第二种
         if video_info_div is None:
-            video_info_div = spider_util.find_element_by_xpath_silent(browser,
-                                                                  f'//*[@id="dark"]/div[2]/div/div[3]/div[1]/ul/li[{i}]/div/div/div[2]/div/div/div[1]/div[1]/div/div[2]/div[1]/xg-controls/xg-inner-controls/xg-right-grid/xg-icon[1]/a')
+            video_info_div = spider_util.find_element_by_xpath_silent(browser, video_info_div_xpath_2)
         if video_info_div is None:
             print(f"此视频的详情链接获取错误，索引:{i}")
             continue
