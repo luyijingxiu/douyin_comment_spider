@@ -34,4 +34,4 @@ browser.maximize_window()
 
 
 if __name__ == '__main__':
-    dy_search.begin_search(browser,"屋顶光伏")
+    dy_search.begin_search(browser,"屋顶光伏", 200)
