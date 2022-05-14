@@ -14,7 +14,7 @@ file_save_path = file_path + r'/spider/'
 
 
 def begin_search(browser: WebDriver, keyword: str, expect_search_result_num: int):
-    req_url = f"{tik_tok_prefix_url}/search/{keyword}"
+    req_url = f"{tik_tok_prefix_url}/search/{keyword}?&type=video"
 
     browser.get(req_url)
     time.sleep(2)
@@ -24,27 +24,26 @@ def begin_search(browser: WebDriver, keyword: str, expect_search_result_num: int
 
     video_ur_list = []
     while i <= expect_search_result_num:
-        video = browser.find_element(By.XPATH, f'//*[@id="dark"]/div[2]/div/div[3]/div[1]/ul/li[{i}]')
+
+        video_div_xpath = f'//*[@id="dark"]/div[2]/div/div[3]/div[2]/ul/li[{i}]'
+        video_url_info_xpath = f'//*[@id="dark"]/div[2]/div/div[3]/div[2]/ul/li[{i}]/div/div/a[1]'
+
+        WebDriverWait(browser, 30).until(lambda driver: spider_util.find_element_by_xpath_silent(driver, video_div_xpath) is not None)
+
+        video = spider_util.find_element_by_xpath_silent(browser, video_div_xpath)
+        if video is None:
+            print(f"未发现视频，索引:{i}")
+            i = i+1
+            continue
         browser.execute_script("arguments[0].scrollIntoView();", video)
 
-        video_info_div_xpath_1 = f'//*[@id="dark"]/div[2]/div/div[3]/div[1]/ul/li[{i}]/div/div/div[3]/div/div/div[1]/div[1]/div/div[2]/div[1]/xg-controls/xg-inner-controls/xg-right-grid/xg-icon[1]/a'
-        video_info_div_xpath_2 = f'//*[@id="dark"]/div[2]/div/div[3]/div[1]/ul/li[{i}]/div/div/div[2]/div/div/div[1]/div[1]/div/div[2]/div[1]/xg-controls/xg-inner-controls/xg-right-grid/xg-icon[1]/a'
-
-        WebDriverWait(browser, 30).until(
-            lambda driver: spider_util.find_element_by_xpath_silent(browser,
-                                                                    video_info_div_xpath_1) is not None or spider_util.find_element_by_xpath_silent(
-                browser, video_info_div_xpath_2) is not None)
-        # 获取详情链接llll
-        video_info_div = spider_util.find_element_by_xpath_silent(browser, video_info_div_xpath_1)
-        # 上一种方式有可能出错，则采取第二种
-        if video_info_div is None:
-            video_info_div = spider_util.find_element_by_xpath_silent(browser, video_info_div_xpath_2)
-        if video_info_div is None:
-            print(f"此视频的详情链接获取错误，索引:{i}")
+        video_url_info = spider_util.find_element_by_xpath_silent(browser, video_url_info_xpath)
+        if video_url_info is None:
+            print(f"视频获取错误，索引: {i}")
+            i = i + 1
             continue
-
-        print(video_info_div.get_attribute("href"))
-        video_ur_list.append(video_info_div.get_attribute("href"))
+        print(video_url_info.get_attribute("href"))
+        video_ur_list.append(video_url_info.get_attribute("href"))
         i = i + 1
 
     file_path = f"{file_save_path}/search/{keyword}"
