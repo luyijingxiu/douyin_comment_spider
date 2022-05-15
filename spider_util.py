@@ -4,6 +4,8 @@ import time
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
+from lxml import etree
+
 
 video_regex = r"^https://www.douyin.com/video/(.*)\?.*$"
 
@@ -20,15 +22,15 @@ def dy_login(browser: WebDriver):
     if login_btn_case1 is not None:
         try:
             print("登录机制1")
-            login_btn_case1.click()
+            execute_silent(lambda:login_btn_case1.click())
             WebDriverWait(browser, 24 * 60 * 3600).until(
-                lambda driver: find_element_by_xpath_silent(browser, '//*[@id="qdblhsHs"]') is None)
+                lambda driver: find_element_by_xpath_silent(driver, '//*[@id="qdblhsHs"]') is None)
         except Exception as e:
             print(e)
     elif login_btn_case2 is not None:
         try:
             print("登录机制2")
-            login_btn_case2.click()
+            execute_silent(lambda: login_btn_case2.click())
             WebDriverWait(browser, 24 * 60 * 3600).until(
                 lambda driver: find_element_by_xpath_silent(browser, '//*[@id="Qf6c6FMM"]') is None)
         except Exception as e:
@@ -38,6 +40,12 @@ def dy_login(browser: WebDriver):
         raise Exception("登录失败")
 
     print("登录成功")
+
+def execute_silent(method):
+    try:
+        method()
+    except Exception as e:
+        print(e)
 
 def str_to_int(num_str:str):
     if num_str is None:
@@ -133,3 +141,18 @@ def get_comment_info(browser: WebDriver, index):
     comment_info["praise_num"] = praise_num
 
     return comment_info
+
+def test_bs4_get_comment(browser: WebDriver):
+    req_url = f"https://www.douyin.com/video/7068486915250539783"
+
+    browser.get(req_url)
+    time.sleep(2)
+    dy_login(browser)
+
+    scroll_to_bottom(browser, 2)
+
+    html_str = browser.execute_script("return document.documentElement.innerHTML")
+    print(html_str)
+    html = etree.HTML(html_str)
+    comment = html.xpath('//*[@id="root"]/div/div[2]/div/div/div[1]/div[3]/div/div/div[4]/div[1]/div/div[2]/div[1]/p/span[1]/span/span/span/span/span')
+    print(comment[0].text)
