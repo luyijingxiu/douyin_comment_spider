@@ -2,8 +2,10 @@ import json
 import os
 import time
 
+from lxml import etree
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.wait import WebDriverWait
 
 import spider_util
@@ -28,16 +30,16 @@ def begin_search(browser: WebDriver, keyword: str, expect_search_result_num: int
         video_div_xpath = f'//*[@id="dark"]/div[2]/div/div[3]/div[2]/ul/li[{i}]'
         video_url_info_xpath = f'//*[@id="dark"]/div[2]/div/div[3]/div[2]/ul/li[{i}]/div/div/a[1]'
 
-        WebDriverWait(browser, 30).until(lambda driver: spider_util.find_element_by_xpath_silent(driver, video_div_xpath) is not None)
+        WebDriverWait(browser, 30).until(lambda driver: spider_util.find_element_silent(driver, video_div_xpath) is not None)
 
-        video = spider_util.find_element_by_xpath_silent(browser, video_div_xpath)
+        video = spider_util.find_element_silent(browser, video_div_xpath)
         if video is None:
             print(f"未发现视频，索引:{i}")
             i = i+1
             continue
         browser.execute_script("arguments[0].scrollIntoView();", video)
 
-        video_url_info = spider_util.find_element_by_xpath_silent(browser, video_url_info_xpath)
+        video_url_info = spider_util.find_element_silent(browser, video_url_info_xpath)
         if video_url_info is None:
             print(f"视频获取错误，索引: {i}")
             i = i + 1
@@ -59,7 +61,7 @@ def begin_search(browser: WebDriver, keyword: str, expect_search_result_num: int
 
 
 def save_searched_video_list_data(browser: WebDriver, keyword: str):
-    req_url = f"{tik_tok_prefix_url}/search/{keyword}"
+    req_url = f"{tik_tok_prefix_url}/search/{keyword}?&type=video"
     browser.get(req_url)
     time.sleep(3)
     spider_util.dy_login(browser)
@@ -79,6 +81,11 @@ def save_searched_video_list_data(browser: WebDriver, keyword: str):
 def save_single_work(browser: WebDriver, video_id: str):
     print(f"开始存储视频:{video_id}")
     req_url = f"{tik_tok_prefix_url}/video/{video_id}"
+
+    # 打开新窗口
+    body = browser.find_element_by_tag_name("body")
+    body.send_keys(Keys.CONTROL + 't')
+
     browser.get(req_url)
     browser.implicitly_wait(10)
 
@@ -90,10 +97,11 @@ def save_single_work(browser: WebDriver, video_id: str):
     comment_num_str = video_meta["comment_num"]
     comment_num = spider_util.str_to_int(comment_num_str)
     if comment_num > 100:
-        save_comments_manually(browser, video_id)
+        print(f"评论数量({comment_num})过多，会造成卡顿，暂不分析")
     else:
-        save_comments_automatically(browser, video_id)
-    browser.close()
+        save_comments_by_wait(browser, video_id)
+    body = browser.find_element_by_tag_name("body")
+    body.send_keys(Keys.CONTROL + 'w')
 
 
 def save_video_meta_data(browser: WebDriver, video_id: str):
@@ -162,6 +170,48 @@ def save_video_meta_data(browser: WebDriver, video_id: str):
     return video_meta_data
 
 
+def save_comments_by_wait(browser: WebDriver, video_id: str):
+    comment_list = []
+
+    i = 1
+    while True:
+        print(f"第{i}次滚动")
+        browser.execute_script('scroll(0,document.body.scrollHeight)')
+
+        end_mark1 = spider_util.execute_function_silent(lambda: browser.find_element(By.XPATH, '//*[@class="BbQpYS5o HO1_ywVX"]'))
+        end_mark2 = spider_util.execute_function_silent(lambda: browser.find_element(By.XPATH, '//*[@class="yCJWkVDx"]'))
+
+        if end_mark1 is not None or end_mark2 is not None:
+            print(f"发现结束标志")
+            break
+        i = i + 1
+
+    html_str = browser.execute_script("return document.documentElement.innerHTML")
+    html = etree.HTML(html_str)
+
+    comment_divs = browser.find_element(By.XPATH, "//*[@id='root']/div/div[2]/div/div/div[1]/div[3]/div/div/div[4]")
+
+    browser.execute_script("arguments[0].scrollIntoView();", comment_divs)
+    list = comment_divs.find_elements_by_xpath('div')
+    li_len = len(list)
+    print(f"评论总数：{li_len}")
+    i = 0
+
+    while i < li_len - 2:
+        comment_info = spider_util.get_comment_info_by_lxml(html,i+1)
+        if comment_info is not None:
+            comment_list.append(comment_info)
+        i = i + 1
+
+    file_path = f"{file_save_path}/work/{video_id}"
+    if not os.path.exists(file_path):
+        os.makedirs(file_path)
+    file_name = 'comment_list.json'
+    with open(f"{file_path}/{file_name}", 'w', encoding='UTF-8') as file:
+        file.write(json.dumps(comment_list, indent=3, ensure_ascii=False))
+        file.close()
+
+
 def save_comments_manually(browser: WebDriver, video_id: str):
     """
     存储评论，需要手动参与
@@ -182,7 +232,7 @@ def save_comments_manually(browser: WebDriver, video_id: str):
     while True:
         # browser.execute_script("arguments[0].scrollIntoView();", list[i])
         # user_name = list[i].find_elements_by_xpath("div/div[2]/div[1]/div[1]/div/a/span/span/span/span/span")[0].text
-        comment_obj = spider_util.find_element_by_xpath_silent(browser,
+        comment_obj = spider_util.find_element_silent(browser,
             f'//*[@id="root"]/div/div[2]/div/div/div[1]/div[3]/div/div/div[4]/div[{i + 1}]')
         if comment_obj is None or comment_obj.text == "加载中":
             browser.execute_script('scroll(0,document.body.scrollHeight)')
@@ -193,7 +243,7 @@ def save_comments_manually(browser: WebDriver, video_id: str):
                 print(f"检测评论框输入了结束，结束评论获取")
                 break
         else:
-            comment_info = spider_util.get_comment_info(browser, i)
+            comment_info = spider_util.get_comment_info_by_selenium(browser, i)
 
             i = i + 1
             comment_list.append(comment_info)
@@ -231,7 +281,7 @@ def save_comments_automatically(browser: WebDriver, video_id: str):
         # browser.execute_script("arguments[0].scrollIntoView();", list[i])
         # user_name = list[i].find_elements_by_xpath("div/div[2]/div[1]/div[1]/div/a/span/span/span/span/span")[0].text
 
-        comment_info = spider_util.get_comment_info(browser, i)
+        comment_info = spider_util.get_comment_info_by_selenium(browser, i)
         i = i + 1
         comment_list.append(comment_info)
 

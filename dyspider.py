@@ -35,6 +35,4 @@ browser.maximize_window()
 
 
 if __name__ == '__main__':
-    # dy_search.begin_search(browser,"屋顶光伏", 200)
-    # dy_search.save_single_work(browser, "7068486915250539783")
-    spider_util.test_bs4_get_comment(browser)
+    dy_search.save_searched_video_list_data(browser,"屋顶光伏")

@@ -7,24 +7,24 @@ from selenium.webdriver.support.wait import WebDriverWait
 from lxml import etree
 
 
-video_regex = r"^https://www.douyin.com/video/(.*)\?.*$"
+video_regex = r"^https://www.douyin.com/video/(.*)(\?.*)?$"
 
 
 def dy_login(browser: WebDriver):
     print("开始登录")
-    WebDriverWait(browser, 24 * 60 * 3600).until(lambda driver: find_element_by_xpath_silent(browser,
-                                                                                             '//*[@id="qdblhsHs"]') is not None or find_element_by_xpath_silent(
+    WebDriverWait(browser, 24 * 60 * 3600).until(lambda driver: find_element_silent(browser,
+                                                                                             '//*[@id="qdblhsHs"]') is not None or find_element_silent(
         browser, '//*[@id="Qf6c6FMM"]') is not None)
 
-    login_btn_case1 = find_element_by_xpath_silent(browser, '//*[@id="qdblhsHs"]')
-    login_btn_case2 = find_element_by_xpath_silent(browser, '//*[@id="Qf6c6FMM"]')
+    login_btn_case1 = find_element_silent(browser, '//*[@id="qdblhsHs"]')
+    login_btn_case2 = find_element_silent(browser, '//*[@id="Qf6c6FMM"]')
 
     if login_btn_case1 is not None:
         try:
             print("登录机制1")
             execute_silent(lambda:login_btn_case1.click())
             WebDriverWait(browser, 24 * 60 * 3600).until(
-                lambda driver: find_element_by_xpath_silent(driver, '//*[@id="qdblhsHs"]') is None)
+                lambda driver: find_element_silent(driver, '//*[@id="qdblhsHs"]') is None)
         except Exception as e:
             print(e)
     elif login_btn_case2 is not None:
@@ -32,7 +32,7 @@ def dy_login(browser: WebDriver):
             print("登录机制2")
             execute_silent(lambda: login_btn_case2.click())
             WebDriverWait(browser, 24 * 60 * 3600).until(
-                lambda driver: find_element_by_xpath_silent(browser, '//*[@id="Qf6c6FMM"]') is None)
+                lambda driver: find_element_silent(browser, '//*[@id="Qf6c6FMM"]') is None)
         except Exception as e:
             print(e)
     else:
@@ -46,6 +46,13 @@ def execute_silent(method):
         method()
     except Exception as e:
         print(e)
+
+def execute_function_silent(method):
+    try:
+        return method()
+    except Exception as e:
+        print(e)
+        return None
 
 def str_to_int(num_str:str):
     if num_str is None:
@@ -61,13 +68,12 @@ def get_video_id_from_url(video_url: str):
     return matcher.group(1)
 
 
-def find_element_by_xpath_silent(browser: WebDriver, xpath):
+def find_element_silent(browser: WebDriver, name, by=By.XPATH):
     try:
-        element = browser.find_element(By.XPATH, xpath)
+        element = browser.find_element(by, name)
         return element
     except Exception as e:
-        print(
-            f'selenium.common.exceptions.NoSuchElementException: Message: no such element: Unable to locate element: "method":"xpath","selector":"{xpath}"')
+        print(e)
         return None
 
 
@@ -103,16 +109,73 @@ def handle_page_lazy_loading(browser: WebDriver, refresh_interval:int):
         else:
             window_height.append(check_height)
 
+def get_comment_info_by_lxml(root, index):
 
-def get_comment_info(browser: WebDriver, index):
+    # root:      //*[@id="root"]/div/div[2]/div/div/div[1]/div[3]/div/div/div[4]/div[12]
+    # time:   	 //*[@id="root"]/div/div[2]/div/div/div[1]/div[3]/div/div/div[4]/div[12]/div/div[2]/div[1]/div[2]/div[1]/p
+    # praise: 	 //*[@id="root"]/div/div[2]/div/div/div[1]/div[3]/div/div/div[4]/div[12]/div/div[2]/div[1]/div[3]/div/p/span
+    # main_page: //*[@id="root"]/div/div[2]/div/div/div[1]/div[3]/div/div/div[4]/div[12]/div/div[2]/div[1]/div[2]/div[1]/div/a
+    # name:   	 //*[@id="root"]/div/div[2]/div/div/div[1]/div[3]/div/div/div[4]/div[12]/div/div[2]/div[1]/div[2]/div[1]/div/a/span/span/span/span/span
+    # comment:	 //*[@id="root"]/div/div[2]/div/div/div[1]/div[3]/div/div/div[4]/div[12]/div/div[2]/div[1]/p/span/span/span/span/span/span
+
+    comment_text_relative_xpath = "div/div[2]/div[1]/p/span/span/span/span/span/span"
+    user_name_relative_xpath = "div/div[2]/div[1]/div[2]/div[1]/div/a/span/span/span/span/span"
+    main_page_relative_xpath = "div/div[2]/div[1]/div[2]/div[1]/div/a/@href"
+    praise_relative_xpath = "div/div[2]/div[1]/div[3]/div/p/span"
+    comment_time_relative_xpath = "div/div[2]/div[1]/div[2]/div[1]/p"
+
+    comment_info = {}
+
+    comment_obj_list = root.xpath(f'//*[@id="root"]/div/div[2]/div/div/div[1]/div[3]/div/div/div[4]/div[{index}]')
+    if comment_obj_list is None or len(comment_obj_list) == 0:
+        print(f"索引为{i}的视频未发现评论")
+        return None
+
+    comment_obj = comment_obj_list[0]
+
+    user_name_list = comment_obj.xpath(user_name_relative_xpath)
+    if user_name_list is not None and len(user_name_list) !=0:
+        user_name = user_name_list[0].text
+        print(f'用户名: {user_name}')
+        comment_info["user_name"] = user_name
+
+    main_page_list = comment_obj.xpath(main_page_relative_xpath)
+    if main_page_list is not None and len(main_page_list) != 0:
+        main_page = main_page_list[0]
+        if main_page.startswith("//"):
+            main_page=main_page[2:]
+        print(f'主页: {main_page}')
+        comment_info["main_page"] = main_page
+
+    comment_time_list = comment_obj.xpath(comment_time_relative_xpath)
+    if comment_time_list is not None and len(comment_time_list) != 0:
+        comment_time = comment_time_list[0].text
+        print(f'评论时间: {comment_time}')
+        comment_info["comment_time"] = comment_time
+
+    comment_text_list = comment_obj.xpath(comment_text_relative_xpath)
+    if comment_text_list is not None and len(comment_text_list) != 0:
+        comment_text = comment_text_list[0].text
+        print(f'评论内容: {comment_text}')
+        comment_info["comment_text"] = comment_text
+
+    praise_num_list = comment_obj.xpath(praise_relative_xpath)
+    if praise_num_list is not None and len(praise_num_list) != 0:
+        praise_num = praise_num_list[0].text
+        print(f'点赞数: {praise_num}')
+        comment_info["praise_num"] = praise_num
+
+    return comment_info
+
+def get_comment_info_by_selenium(browser: WebDriver, index):
     comment_info = {}
     user_name = browser.find_element(By.XPATH,
-                                     f'//*[@id="root"]/div/div[2]/div/div/div[1]/div[3]/div/div/div[4]/div[{index + 1}]/div/div[2]/div[1]/div[1]/div/a/span/span/span/span/span').text
+                                     f'//*[@id="root"]/div/div[2]/div/div/div[1]/div[3]/div/div/div[4]/div[{index + 1}]/div/div[2]/div[1]/div[2]/div[1]/div/a/span/span/span/span/span').text
     print(f'用户名: {user_name}')
     comment_info["user_name"] = user_name
     #
     main_page = browser.find_element(By.XPATH,
-                                     f'//*[@id="root"]/div/div[2]/div/div/div[1]/div[3]/div/div/div[4]/div[{index + 1}]/div/div[1]/a').get_attribute(
+                                     f'//*[@id="root"]/div/div[2]/div/div/div[1]/div[3]/div/div/div[4]/div[{index + 1}]/div/div[2]/div[1]/div[2]/div[1]/div/a').get_attribute(
         "href")
     print(f'主页: {main_page}')
     comment_info["main_page"] = main_page
@@ -142,17 +205,4 @@ def get_comment_info(browser: WebDriver, index):
 
     return comment_info
 
-def test_bs4_get_comment(browser: WebDriver):
-    req_url = f"https://www.douyin.com/video/7068486915250539783"
 
-    browser.get(req_url)
-    time.sleep(2)
-    dy_login(browser)
-
-    scroll_to_bottom(browser, 2)
-
-    html_str = browser.execute_script("return document.documentElement.innerHTML")
-    print(html_str)
-    html = etree.HTML(html_str)
-    comment = html.xpath('//*[@id="root"]/div/div[2]/div/div/div[1]/div[3]/div/div/div[4]/div[1]/div/div[2]/div[1]/p/span[1]/span/span/span/span/span')
-    print(comment[0].text)

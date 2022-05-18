@@ -2,3 +2,4 @@ venv
 .idea
 /__pycache__/dy_search.cpython-36.pyc
 /__pycache__/spider_util.cpython-36.pyc
+spider
