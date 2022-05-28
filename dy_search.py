@@ -97,9 +97,8 @@ def save_single_work(browser: WebDriver, video_id: str):
     comment_num_str = video_meta["comment_num"]
     comment_num = spider_util.str_to_int(comment_num_str)
     if comment_num > 100:
-        print(f"评论数量({comment_num})过多，会造成卡顿，暂不分析")
-    else:
-        save_comments_by_wait(browser, video_id)
+        print(f"评论数量({comment_num})过多，会造成卡顿")
+    save_comments_by_wait(browser, video_id)
     body = browser.find_element_by_tag_name("body")
     body.send_keys(Keys.CONTROL + 'w')
 
