@@ -109,6 +109,11 @@ def handle_page_lazy_loading(browser: WebDriver, refresh_interval:int):
         else:
             window_height.append(check_height)
 
+def get_lxml_etree(browser):
+    html_str = browser.execute_script("return document.documentElement.innerHTML")
+    html = etree.HTML(html_str)
+    return html
+
 def get_comment_info_by_lxml(root, index):
 
     # root:      //*[@id="root"]/div/div[2]/div/div/div[1]/div[3]/div/div/div[4]/div[12]
@@ -126,9 +131,9 @@ def get_comment_info_by_lxml(root, index):
 
     comment_info = {}
 
-    comment_obj_list = root.xpath(f'//*[@id="root"]/div/div[2]/div/div/div[1]/div[3]/div/div/div[4]/div[{index}]')
+    comment_obj_list = root.xpath(f'//*[@id="root"]/div/div[2]/div/div/div[1]/div[3]/div/div/div[3]/div[{index}]')
     if comment_obj_list is None or len(comment_obj_list) == 0:
-        print(f"索引为{i}的视频未发现评论")
+        print(f"索引为{index}的div未发现评论")
         return None
 
     comment_obj = comment_obj_list[0]

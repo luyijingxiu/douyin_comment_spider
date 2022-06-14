@@ -71,8 +71,9 @@ def save_searched_video_list_data(browser: WebDriver, keyword: str):
         print(video_list)
     for video_url in video_list:
         video_id = spider_util.get_video_id_from_url(video_url)
-        video_file_path = f"{file_save_path}/work/{video_id}"
-        if os.path.exists(video_file_path):
+        video_meta_file_path = f"{file_save_path}/work/{video_id}/metadata.json"
+        video_comment_file_path = f"{file_save_path}/work/{video_id}/comment_list.json"
+        if os.path.exists(video_meta_file_path) and os.path.exists(video_comment_file_path):
             print(f"视频:{video_id}已处理")
         else:
             save_single_work(browser, video_id)
@@ -177,18 +178,19 @@ def save_comments_by_wait(browser: WebDriver, video_id: str):
         print(f"第{i}次滚动")
         browser.execute_script('scroll(0,document.body.scrollHeight)')
 
-        end_mark1 = spider_util.execute_function_silent(lambda: browser.find_element(By.XPATH, '//*[@class="BbQpYS5o HO1_ywVX"]'))
-        end_mark2 = spider_util.execute_function_silent(lambda: browser.find_element(By.XPATH, '//*[@class="yCJWkVDx"]'))
+        tree = spider_util.get_lxml_etree(browser)
 
-        if end_mark1 is not None or end_mark2 is not None:
+        end_mark1 = tree.xpath('//*[@class="BbQpYS5o HO1_ywVX"]')
+        end_mark2 = tree.xpath('//*[@class="yCJWkVDx"]')
+
+        if len(end_mark1) == 0 or len(end_mark2) == 0:
             print(f"发现结束标志")
             break
         i = i + 1
 
-    html_str = browser.execute_script("return document.documentElement.innerHTML")
-    html = etree.HTML(html_str)
+    html = spider_util.get_lxml_etree(browser)
 
-    comment_divs = browser.find_element(By.XPATH, "//*[@id='root']/div/div[2]/div/div/div[1]/div[3]/div/div/div[4]")
+    comment_divs = browser.find_element(By.XPATH, "//*[@id='root']/div/div[2]/div/div/div[1]/div[3]/div/div/div[3]")
 
     browser.execute_script("arguments[0].scrollIntoView();", comment_divs)
     list = comment_divs.find_elements_by_xpath('div')
