@@ -68,16 +68,16 @@ def get_video_id_from_url(video_url: str):
     matcher = re.match(video_regex, video_url)
     return matcher.group(1)
 
-def fake_human_scroll(browser:WebDriver):
+def fake_human_scroll(browser:WebDriver, max_scroll):
     """
     上下滑动假装认为操作
     :param browser:
     :return:
     """
     for i in range(0, random.randint(1,10)):
-        browser.execute_script(f'scroll(0,-{random.randint(1,100)}')
+        browser.execute_script(f'scrollBy(0,{-random.randint(1,max_scroll)})')
         time.sleep(random.random()/2)
-        browser.execute_script(f'scroll(0,{random.randint(1,100)}')
+        browser.execute_script(f'scrollBy(0,{random.randint(1,max_scroll)})')
         time.sleep(random.random()/2)
 
 
