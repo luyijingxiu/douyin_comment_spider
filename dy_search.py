@@ -183,7 +183,7 @@ def save_comments_by_wait(browser: WebDriver, video_id: str):
         end_mark1 = tree.xpath('//*[@class="BbQpYS5o HO1_ywVX"]')
         end_mark2 = tree.xpath('//*[@class="yCJWkVDx"]')
 
-        if len(end_mark1) == 0 or len(end_mark2) == 0:
+        if len(end_mark1) != 0 or len(end_mark2) != 0:
             print(f"发现结束标志")
             break
         i = i + 1
