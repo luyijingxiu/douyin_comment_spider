@@ -1,3 +1,4 @@
+import random
 import re
 import time
 
@@ -66,6 +67,18 @@ def str_to_int(num_str:str):
 def get_video_id_from_url(video_url: str):
     matcher = re.match(video_regex, video_url)
     return matcher.group(1)
+
+def fake_human_scroll(browser:WebDriver):
+    """
+    上下滑动假装认为操作
+    :param browser:
+    :return:
+    """
+    for i in range(0, random.randint(1,10)):
+        browser.execute_script(f'scroll(0,-{random.randint(1,100)}')
+        time.sleep(random.random()/2)
+        browser.execute_script(f'scroll(0,{random.randint(1,100)}')
+        time.sleep(random.random()/2)
 
 
 def find_element_silent(browser: WebDriver, name, by=By.XPATH):

@@ -178,6 +178,7 @@ def save_comments_by_wait(browser: WebDriver, video_id: str):
         print(f"第{i}次滚动")
         browser.execute_script('scroll(0,document.body.scrollHeight)')
 
+        spider_util.fake_human_scroll(browser)
         tree = spider_util.get_lxml_etree(browser)
 
         end_mark1 = tree.xpath('//*[@class="BbQpYS5o HO1_ywVX"]')
