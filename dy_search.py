@@ -111,27 +111,27 @@ def save_video_meta_data(browser: WebDriver, video_id: str):
     video_meta_data["url"] = req_url
 
     title = browser.find_element(By.XPATH,
-                                 "//*[@id='root']/div/div[2]/div/div/div[1]/div[1]/div[3]/div/div[1]/div/h1/span[2]").text
+                                 '//*[@id="root"]/div/div[2]/div/div/div[1]/div[3]/div/div[1]/div/h1/span[2]').text
     print(f'标题: {title}')
     video_meta_data["title"] = title
 
     favorite_num = browser.find_element(By.XPATH,
-                                        "//*[@id='root']/div/div[2]/div/div/div[1]/div[1]/div[3]/div/div[2]/div[1]/div[1]/span").text
+                                        '//*[@id="root"]/div/div[2]/div/div/div[1]/div[3]/div/div[2]/div[1]/div[1]/span').text
     print(f"获赞: {favorite_num}")
     video_meta_data["favorite_num"] = favorite_num
 
     comment_num = browser.find_element(By.XPATH,
-                                       "//*[@id='root']/div/div[2]/div/div/div[1]/div[1]/div[3]/div/div[2]/div[1]/div[2]/span").text
+                                       '//*[@id="root"]/div/div[2]/div/div/div[1]/div[3]/div/div[2]/div[1]/div[2]/span').text
     print(f"评论: {comment_num}")
     video_meta_data["comment_num"] = comment_num
 
     collect_num = browser.find_element(By.XPATH,
-                                       "//*[@id='root']/div/div[2]/div/div/div[1]/div[1]/div[3]/div/div[2]/div[1]/div[3]/span").text
+                                       '//*[@id="root"]/div/div[2]/div/div/div[1]/div[3]/div/div[2]/div[1]/div[3]/span').text
     print(f"收藏: {collect_num}")
     video_meta_data["collect_num"] = collect_num
 
     release_time = browser.find_element(By.XPATH,
-                                        "//*[@id='root']/div/div[2]/div/div/div[1]/div[1]/div[3]/div/div[2]/div[2]/span").text
+                                        '//*[@id="root"]/div/div[2]/div/div/div[1]/div[3]/div/div[2]/div[2]/span').text
     release_time = release_time[5:]
     print(f"发布时间: {release_time}")
     video_meta_data["release_time"] = release_time
@@ -139,23 +139,23 @@ def save_video_meta_data(browser: WebDriver, video_id: str):
     author_info = {}
     video_meta_data["author_info"] = author_info
     author_name = browser.find_element(By.XPATH,
-                                       "//*[@id='root']/div/div[2]/div/div/div[2]/div/div[1]/div[2]/a/div/span/span/span/span/span").text
+                                       '//*[@id="root"]/div/div[2]/div/div/div[2]/div/div[1]/div[2]/a/div/span/span/span/span/span').text
     print(f"作者: {author_name}")
     author_info["name"] = author_name
 
     author_main_page = browser.find_element(By.XPATH,
-                                            "//*[@id='root']/div/div[2]/div/div/div[2]/div/div[1]/div[2]/a").get_attribute(
+                                            '//*[@id="root"]/div/div[2]/div/div/div[2]/div/div[1]/div[1]/a').get_attribute(
         "href")
     print(f"作者主页: {author_main_page}")
     author_info["main_page"] = author_main_page
 
     author_follower_num = browser.find_element(By.XPATH,
-                                               "//*[@id='root']/div/div[2]/div/div/div[2]/div/div[1]/div[2]/p/span[2]").text
+                                              '//*[@id="root"]/div/div[2]/div/div/div[2]/div/div[1]/div[2]/p/span[2]').text
     print(f"作者粉丝: {author_follower_num}")
     author_info["follower_num"] = author_follower_num
 
     author_praise_num = browser.find_element(By.XPATH,
-                                             "//*[@id='root']/div/div[2]/div/div/div[2]/div/div[1]/div[2]/p/span[4]").text
+                                             '//*[@id="root"]/div/div[2]/div/div/div[2]/div/div[1]/div[2]/p/span[4]').text
     print(f"作者获赞: {author_praise_num}")
     author_info["praise_num"] = author_praise_num
 
@@ -191,7 +191,7 @@ def save_comments_by_wait(browser: WebDriver, video_id: str):
 
     html = spider_util.get_lxml_etree(browser)
 
-    comment_divs = browser.find_element(By.XPATH, "//*[@id='root']/div/div[2]/div/div/div[1]/div[3]/div/div/div[3]")
+    comment_divs = browser.find_element(By.XPATH, '//*[@id="root"]/div/div[2]/div/div/div[1]/div[5]/div/div/div[3]')
 
     browser.execute_script("arguments[0].scrollIntoView();", comment_divs)
     list = comment_divs.find_elements_by_xpath('div')
@@ -271,7 +271,7 @@ def save_comments_automatically(browser: WebDriver, video_id: str):
     comment_list = []
     spider_util.handle_page_lazy_loading(browser, 3)
 
-    comment_divs = browser.find_element(By.XPATH, "//*[@id='root']/div/div[2]/div/div/div[1]/div[3]/div/div/div[4]")
+    comment_divs = browser.find_element(By.XPATH, '//*[@id="root"]/div/div[2]/div/div/div[1]/div[5]/div/div/div[3]')
 
     browser.execute_script("arguments[0].scrollIntoView();", comment_divs)
     list = comment_divs.find_elements_by_xpath('div')
