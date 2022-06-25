@@ -144,7 +144,7 @@ def get_comment_info_by_lxml(root, index):
 
     comment_info = {}
 
-    comment_obj_list = root.xpath(f'//*[@id="root"]/div/div[2]/div/div/div[1]/div[3]/div/div/div[3]/div[{index}]')
+    comment_obj_list = root.xpath(f'//*[@id="root"]/div/div[2]/div/div/div[1]/div[5]/div/div/div[3]/div[{index}]')
     if comment_obj_list is None or len(comment_obj_list) == 0:
         print(f"索引为{index}的div未发现评论")
         return None
@@ -152,7 +152,7 @@ def get_comment_info_by_lxml(root, index):
     comment_obj = comment_obj_list[0]
 
     user_name_list = comment_obj.xpath(user_name_relative_xpath)
-    if user_name_list is not None and len(user_name_list) !=0:
+    if user_name_list is not None and len(user_name_list) != 0:
         user_name = user_name_list[0].text
         print(f'用户名: {user_name}')
         comment_info["user_name"] = user_name
