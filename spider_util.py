@@ -1,3 +1,4 @@
+import datetime
 import random
 import re
 import time
@@ -9,23 +10,24 @@ from lxml import etree
 
 
 video_regex = r"^https://www.douyin.com/video/(.*)(\?.*)?$"
-
+login_btn_case1_xpath='//*[@id="_7hLtYmO"]'
+login_btn_case2_xpath='//*[@id="tcTjz3nj"]'
 
 def dy_login(browser: WebDriver):
     print("开始登录")
     WebDriverWait(browser, 24 * 60 * 3600).until(lambda driver: find_element_silent(browser,
-                                                                                             '//*[@id="qdblhsHs"]') is not None or find_element_silent(
-        browser, '//*[@id="Qf6c6FMM"]') is not None)
+                                                                                             login_btn_case1_xpath) is not None or find_element_silent(
+        browser, login_btn_case2_xpath) is not None)
 
-    login_btn_case1 = find_element_silent(browser, '//*[@id="qdblhsHs"]')
-    login_btn_case2 = find_element_silent(browser, '//*[@id="Qf6c6FMM"]')
+    login_btn_case1 = find_element_silent(browser, login_btn_case1_xpath)
+    login_btn_case2 = find_element_silent(browser, login_btn_case2_xpath)
 
     if login_btn_case1 is not None:
         try:
             print("登录机制1")
             execute_silent(lambda:login_btn_case1.click())
             WebDriverWait(browser, 24 * 60 * 3600).until(
-                lambda driver: find_element_silent(driver, '//*[@id="qdblhsHs"]') is None)
+                lambda driver: find_element_silent(driver, login_btn_case1_xpath) is None)
         except Exception as e:
             print(e)
     elif login_btn_case2 is not None:
@@ -33,7 +35,7 @@ def dy_login(browser: WebDriver):
             print("登录机制2")
             execute_silent(lambda: login_btn_case2.click())
             WebDriverWait(browser, 24 * 60 * 3600).until(
-                lambda driver: find_element_silent(browser, '//*[@id="Qf6c6FMM"]') is None)
+                lambda driver: find_element_silent(browser, login_btn_case2_xpath) is None)
         except Exception as e:
             print(e)
     else:
@@ -129,27 +131,30 @@ def get_lxml_etree(browser):
 
 def get_comment_info_by_lxml(root, index):
 
-    # root:      //*[@id="root"]/div/div[2]/div/div/div[1]/div[3]/div/div/div[4]/div[12]
-    # time:   	 //*[@id="root"]/div/div[2]/div/div/div[1]/div[3]/div/div/div[4]/div[12]/div/div[2]/div[1]/div[2]/div[1]/p
-    # praise: 	 //*[@id="root"]/div/div[2]/div/div/div[1]/div[3]/div/div/div[4]/div[12]/div/div[2]/div[1]/div[3]/div/p/span
-    # main_page: //*[@id="root"]/div/div[2]/div/div/div[1]/div[3]/div/div/div[4]/div[12]/div/div[2]/div[1]/div[2]/div[1]/div/a
-    # name:   	 //*[@id="root"]/div/div[2]/div/div/div[1]/div[3]/div/div/div[4]/div[12]/div/div[2]/div[1]/div[2]/div[1]/div/a/span/span/span/span/span
-    # comment:	 //*[@id="root"]/div/div[2]/div/div/div[1]/div[3]/div/div/div[4]/div[12]/div/div[2]/div[1]/p/span/span/span/span/span/span
+    # root:      //*[@id="douyin-right-container"]/div[2]/div/div[1]/div[5]/div/div/div[3]/div[10]
+    # time:   	//*[@id="douyin-right-container"]/div[2]/div/div[1]/div[5]/div/div/div[3]/div[10]/div/div[2]/div/div[2]/span
+    # praise: 	//*[@id="douyin-right-container"]/div[2]/div/div[1]/div[5]/div/div/div[3]/div[10]/div/div[2]/div/div[3]/div/div[1]/p[1]/span
+    # main_page: //*[@id="douyin-right-container"]/div[2]/div/div[1]/div[5]/div/div/div[3]/div[10]/div/div[2]/div/div[1]/div[1]/div/a
+    # name:   	//*[@id="douyin-right-container"]/div[2]/div/div[1]/div[5]/div/div/div[3]/div[10]/div/div[2]/div/div[1]/div[1]/div/a/span/span/span/span/span/span
+    # comment:	//*[@id="douyin-right-container"]/div[2]/div/div[1]/div[5]/div/div/div[3]/div[10]/div/div[2]/div/p
 
-    comment_text_relative_xpath = "div/div[2]/div[1]/p/span/span/span/span/span/span"
-    user_name_relative_xpath = "div/div[2]/div[1]/div[2]/div[1]/div/a/span/span/span/span/span"
-    main_page_relative_xpath = "div/div[2]/div[1]/div[2]/div[1]/div/a/@href"
-    praise_relative_xpath = "div/div[2]/div[1]/div[3]/div/p/span"
-    comment_time_relative_xpath = "div/div[2]/div[1]/div[2]/div[1]/p"
+    comment_text_relative_xpath = "div/div[2]/div/p/span/span/span/span/span/span/span"
+    user_name_relative_xpath = "div/div[2]/div/div[1]/div[1]/div/a/span/span/span/span/span/span"
+    main_page_relative_xpath = "div/div[2]/div/div[1]/div[1]/div/a/@href"
+    praise_relative_xpath = "div/div[2]/div/div[3]/div/div[1]/p[1]/span"
+    comment_time_and_location_relative_xpath = "div/div[2]/div/div[2]/span"
 
     comment_info = {}
 
-    comment_obj_list = root.xpath(f'//*[@id="root"]/div/div[2]/div/div/div[1]/div[5]/div/div/div[3]/div[{index}]')
+    comment_obj_list = root.xpath(f'//*[@id="douyin-right-container"]/div[2]/div/div[1]/div[5]/div/div/div[3]/div[{index}]')
     if comment_obj_list is None or len(comment_obj_list) == 0:
         print(f"索引为{index}的div未发现评论")
         return None
 
     comment_obj = comment_obj_list[0]
+
+    # 存储爬取时候的时间，因为评论时间都是相对时间，比如1天前，9个月前等
+    comment_info["data_snapshot_time"] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
     user_name_list = comment_obj.xpath(user_name_relative_xpath)
     if user_name_list is not None and len(user_name_list) != 0:
@@ -165,11 +170,11 @@ def get_comment_info_by_lxml(root, index):
         print(f'主页: {main_page}')
         comment_info["main_page"] = main_page
 
-    comment_time_list = comment_obj.xpath(comment_time_relative_xpath)
+    comment_time_list = comment_obj.xpath(comment_time_and_location_relative_xpath)
     if comment_time_list is not None and len(comment_time_list) != 0:
         comment_time = comment_time_list[0].text
         print(f'评论时间: {comment_time}')
-        comment_info["comment_time"] = comment_time
+        comment_info["comment_time_and_location"] = comment_time
 
     comment_text_list = comment_obj.xpath(comment_text_relative_xpath)
     if comment_text_list is not None and len(comment_text_list) != 0:

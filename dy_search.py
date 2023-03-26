@@ -15,8 +15,13 @@ tik_tok_prefix_url = 'https://www.douyin.com'
 file_save_path = file_path + r'/spider/'
 
 
-def begin_search(browser: WebDriver, keyword: str, expect_search_result_num: int):
-    req_url = f"{tik_tok_prefix_url}/search/{keyword}?&type=video"
+'''
+根据关键词搜索相关视频，并存储到video_url_list.json用于后续评论爬取
+
+@:param expect_search_result_num 期待搜索的结果数量
+'''
+def begin_search(browser: WebDriver, keyword: str, expect_search_result_num: int, publish_time: int, sort_type: int):
+    req_url = f"{tik_tok_prefix_url}/search/{keyword}?publish_time={publish_time}&sort_type={sort_type}&source=tab_search&type=video"
 
     browser.get(req_url)
     time.sleep(2)
@@ -27,8 +32,8 @@ def begin_search(browser: WebDriver, keyword: str, expect_search_result_num: int
     video_ur_list = []
     while i <= expect_search_result_num:
 
-        video_div_xpath = f'//*[@id="dark"]/div[2]/div/div[3]/div[2]/ul/li[{i}]'
-        video_url_info_xpath = f'//*[@id="dark"]/div[2]/div/div[3]/div[2]/ul/li[{i}]/div/div/a[1]'
+        video_div_xpath = f'//*[@id="douyin-right-container"]/div[2]/div/div[3]/div[2]/ul/li[{i}]'
+        video_url_info_xpath = f'//*[@id="douyin-right-container"]/div[2]/div/div[3]/div[2]/ul/li[{i}]/div/a'
 
         WebDriverWait(browser, 30).until(lambda driver: spider_util.find_element_silent(driver, video_div_xpath) is not None)
 
@@ -94,11 +99,6 @@ def save_single_work(browser: WebDriver, video_id: str):
     windows = browser.window_handles
     browser.switch_to.window(windows[-1])
 
-    video_meta = save_video_meta_data(browser, video_id)
-    comment_num_str = video_meta["comment_num"]
-    comment_num = spider_util.str_to_int(comment_num_str)
-    if comment_num > 100:
-        print(f"评论数量({comment_num})过多，会造成卡顿")
     save_comments_by_wait(browser, video_id)
     body = browser.find_element_by_tag_name("body")
     body.send_keys(Keys.CONTROL + 'w')
@@ -111,27 +111,27 @@ def save_video_meta_data(browser: WebDriver, video_id: str):
     video_meta_data["url"] = req_url
 
     title = browser.find_element(By.XPATH,
-                                 '//*[@id="root"]/div/div[2]/div/div/div[1]/div[3]/div/div[1]/div/h1/span[2]').text
+                                 '//*[@id="douyin-right-container"]/div[2]/div/div[1]/div[3]/div/div[1]/div').text
     print(f'标题: {title}')
     video_meta_data["title"] = title
 
     favorite_num = browser.find_element(By.XPATH,
-                                        '//*[@id="root"]/div/div[2]/div/div/div[1]/div[3]/div/div[2]/div[1]/div[1]/span').text
+                                        '//*[@id="douyin-right-container"]/div[2]/div/div[1]/div[3]/div/div[2]/div[1]/div[1]/span').text
     print(f"获赞: {favorite_num}")
     video_meta_data["favorite_num"] = favorite_num
 
     comment_num = browser.find_element(By.XPATH,
-                                       '//*[@id="root"]/div/div[2]/div/div/div[1]/div[3]/div/div[2]/div[1]/div[2]/span').text
+                                       '//*[@id="douyin-right-container"]/div[2]/div/div[1]/div[3]/div/div[2]/div[1]/div[2]/span').text
     print(f"评论: {comment_num}")
     video_meta_data["comment_num"] = comment_num
 
     collect_num = browser.find_element(By.XPATH,
-                                       '//*[@id="root"]/div/div[2]/div/div/div[1]/div[3]/div/div[2]/div[1]/div[3]/span').text
+                                       '//*[@id="douyin-right-container"]/div[2]/div/div[1]/div[3]/div/div[2]/div[1]/div[3]/span').text
     print(f"收藏: {collect_num}")
     video_meta_data["collect_num"] = collect_num
 
     release_time = browser.find_element(By.XPATH,
-                                        '//*[@id="root"]/div/div[2]/div/div/div[1]/div[3]/div/div[2]/div[2]/span').text
+                                        '//*[@id="douyin-right-container"]/div[2]/div/div[1]/div[3]/div/div[2]/div[2]/span').text
     release_time = release_time[5:]
     print(f"发布时间: {release_time}")
     video_meta_data["release_time"] = release_time
@@ -139,23 +139,23 @@ def save_video_meta_data(browser: WebDriver, video_id: str):
     author_info = {}
     video_meta_data["author_info"] = author_info
     author_name = browser.find_element(By.XPATH,
-                                       '//*[@id="root"]/div/div[2]/div/div/div[2]/div/div[1]/div[2]/a/div/span/span/span/span/span').text
+                                       '//*[@id="douyin-right-container"]/div[2]/div/div[2]/div/div[1]/div[2]/a/div/span').text
     print(f"作者: {author_name}")
     author_info["name"] = author_name
 
     author_main_page = browser.find_element(By.XPATH,
-                                            '//*[@id="root"]/div/div[2]/div/div/div[2]/div/div[1]/div[1]/a').get_attribute(
+                                            '//*[@id="douyin-right-container"]/div[2]/div/div[2]/div/div[1]/div[2]/a').get_attribute(
         "href")
     print(f"作者主页: {author_main_page}")
     author_info["main_page"] = author_main_page
 
     author_follower_num = browser.find_element(By.XPATH,
-                                              '//*[@id="root"]/div/div[2]/div/div/div[2]/div/div[1]/div[2]/p/span[2]').text
+                                              '//*[@id="douyin-right-container"]/div[2]/div/div[2]/div/div[1]/div[2]/p/span[2]').text
     print(f"作者粉丝: {author_follower_num}")
     author_info["follower_num"] = author_follower_num
 
     author_praise_num = browser.find_element(By.XPATH,
-                                             '//*[@id="root"]/div/div[2]/div/div/div[2]/div/div[1]/div[2]/p/span[4]').text
+                                             '//*[@id="douyin-right-container"]/div[2]/div/div[2]/div/div[1]/div[2]/p/span[4]').text
     print(f"作者获赞: {author_praise_num}")
     author_info["praise_num"] = author_praise_num
 
@@ -191,7 +191,7 @@ def save_comments_by_wait(browser: WebDriver, video_id: str):
 
     html = spider_util.get_lxml_etree(browser)
 
-    comment_divs = browser.find_element(By.XPATH, '//*[@id="root"]/div/div[2]/div/div/div[1]/div[5]/div/div/div[3]')
+    comment_divs = browser.find_element(By.XPATH, '//*[@id="douyin-right-container"]/div[2]/div/div[1]/div[5]/div/div/div[3]')
 
     browser.execute_script("arguments[0].scrollIntoView();", comment_divs)
     list = comment_divs.find_elements_by_xpath('div')
