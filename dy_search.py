@@ -99,6 +99,8 @@ def save_single_work(browser: WebDriver, video_id: str):
     windows = browser.window_handles
     browser.switch_to.window(windows[-1])
 
+    save_video_meta_data(browser, video_id)
+
     save_comments_by_wait(browser, video_id)
     body = browser.find_element_by_tag_name("body")
     body.send_keys(Keys.CONTROL + 'w')
