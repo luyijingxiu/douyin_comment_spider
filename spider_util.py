@@ -170,11 +170,11 @@ def get_comment_info_by_lxml(root, index):
         print(f'主页: {main_page}')
         comment_info["main_page"] = main_page
 
-    comment_time_list = comment_obj.xpath(comment_time_and_location_relative_xpath)
-    if comment_time_list is not None and len(comment_time_list) != 0:
-        comment_time = comment_time_list[0].text
-        print(f'评论时间: {comment_time}')
-        comment_info["comment_time_and_location"] = comment_time
+    comment_time_and_location_list = comment_obj.xpath(comment_time_and_location_relative_xpath)
+    if comment_time_and_location_list is not None and len(comment_time_and_location_list) != 0:
+        comment_time_and_location = comment_time_and_location_list[0].text
+        print(f'评论时间: {comment_time_and_location}')
+        comment_info["comment_time_and_location"] = comment_time_and_location
 
     comment_text_list = comment_obj.xpath(comment_text_relative_xpath)
     if comment_text_list is not None and len(comment_text_list) != 0:

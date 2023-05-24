@@ -38,9 +38,10 @@ def dy_work_json_to_excel(work_info_json_path, result_path):
             comment_info = {}
             for key in metadata:
                 comment_info[key] = metadata[key]
+            comment_info["评论数据爬取时间"] = origin_comment_info.get("data_snapshot_time")
             comment_info["评论用户名"] = origin_comment_info.get("user_name")
             comment_info["评论用户主页"] = origin_comment_info.get("main_page")
-            comment_info["评论时间"] = origin_comment_info.get("comment_time")
+            comment_info["评论时间和地点"] = origin_comment_info.get("comment_time_and_location")
             comment_info["评论内容"] = origin_comment_info.get("comment_text")
             comment_info["评论被赞数"] = origin_comment_info.get("praise_num")
             comment_list.append(comment_info)
